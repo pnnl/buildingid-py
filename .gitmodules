@@ -1,0 +1,3 @@
+[submodule "open-location-code"]
+	path = open-location-code
+	url = https://github.com/google/open-location-code
