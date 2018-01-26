@@ -62,7 +62,7 @@ The API
 UBID codecs are encapsulated in separate modules:
 
 * ``buildingid.v1`` (format: "C-h-w"; **deprecated**)
-* ``buildingid.v2`` (format: "C-NE-SW")
+* ``buildingid.v2`` (format: "C-NW-SE")
 * ``buildingid.v3`` (format: "C-n-e-s-w")
 
 Modules export the same API:
@@ -78,7 +78,7 @@ In the following example, a UBID code is decoded and then re-encoded:
 
   #!/usr/bin/env python3
 
-  # Use the "C-NE-SW" format for UBID codes.
+  # Use the "C-NW-SE" format for UBID codes.
   import buildingid.v2
 
   if __name__ == '__main__':
