@@ -146,6 +146,12 @@ Data
 A shell script that downloads publicly-available data and assigns UBID codes is
 located in the ``bin/get_buildingid_data.sh`` source file.
 
+-------
+License
+-------
+
+BSD 3-clause "New" or "Revised" license.
+
 -------------
 Contributions
 -------------
