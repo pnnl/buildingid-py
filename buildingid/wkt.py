@@ -7,8 +7,6 @@
 #
 # See LICENSE.txt and WARRANTY.txt for details.
 
-from .code_area import CodeArea
-
 import shapely.wkt
 import typing
 
