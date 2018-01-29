@@ -13,6 +13,9 @@ from .code_area import CodeArea
 
 import re
 
+# The separator for OLC codes in a UBID code.
+SEPARATOR_ = '-'
+
 # Format string for UBID codes.
 FORMAT_STRING_ = '%s-%.0f-%.0f-%.0f-%.0f'
 

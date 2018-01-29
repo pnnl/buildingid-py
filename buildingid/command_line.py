@@ -10,6 +10,7 @@
 
 import click
 import csv
+import pandas
 
 from buildingid.version import __version__
 
@@ -196,6 +197,233 @@ def run_convert(source, target):
             # Otherwise, write the output UBID code to the standard output
             # stream.
             print(target_code, file=stdout)
+
+    # Done!
+    return
+
+@cli.command('csvmatch-exact', short_help='Merge the records in two CSV files by exactly matching the UBIDs.')
+@click.option('--how', type=click.Choice(['left', 'right', 'outer', 'inner']), default='inner', show_default=True, help='the database-style join operation')
+@click.option('--left-on', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field name for the column to join on for the "LEFT" CSV file')
+@click.option('--right-on', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field name for the column to join on for the "RIGHT" CSV file')
+@click.argument('left', type=click.File('r'))
+@click.argument('right', type=click.File('r'))
+def run_csv_match_exact(how, left_on, right_on, left, right):
+    # Read the left and right CSV files.
+    left_data_frame = pandas.read_csv(filepath_or_buffer=left)
+    right_data_frame = pandas.read_csv(filepath_or_buffer=right)
+
+    # Merge the left and right CSV files.
+    merged_data_frame = left_data_frame.merge(right_data_frame, how=how, left_on=left_on, right_on=right_on)
+
+    # Write the merged CSV file to the standard output stream.
+    merged_data_frame.to_csv(path_or_buf=click.get_text_stream('stdout'), index=False, quoting=csv.QUOTE_NONNUMERIC)
+
+    # Done!
+    return
+
+@cli.command('csvmatch-partial-v2', short_help='Merge the records in two CSV files by partially matching the version-2 UBIDs (format: "C-NE-SE").')
+@click.option('--how', type=click.Choice(['left', 'right', 'outer', 'inner']), default='inner', show_default=True, help='the database-style join operation')
+@click.option('--left-on', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field name for the column to join on for the "LEFT" CSV file')
+@click.option('--right-on', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field name for the column to join on for the "RIGHT" CSV file')
+@click.option('--centroid/--no-centroid', default=False, help='whether or not to match the Open Location Code for the centroid')
+@click.option('--northwest/--no-northwest', default=False, help='whether or not to match the Open Location Code for the northwest corner')
+@click.option('--southeast/--no-southeast', default=False, help='whether or not to match the Open Location Code for the southeast corner')
+@click.option('--drop-suffix-centroid', type=click.IntRange(0, None), default=0, show_default=True, help='the number of characters to drop (from the right) of the Open Location Code for the centroid')
+@click.option('--drop-suffix-northwest', type=click.IntRange(0, None), default=0, show_default=True, help='the number of characters to drop (from the right) of the Open Location Code for the northwest corner')
+@click.option('--drop-suffix-southeast', type=click.IntRange(0, None), default=0, show_default=True, help='the number of characters to drop (from the right) of the Open Location Code for the southeast corner')
+@click.argument('left', type=click.File('r'))
+@click.argument('right', type=click.File('r'))
+def run_csv_match_partial_v2(how, left_on, right_on, centroid, northwest, southeast, drop_suffix_centroid, drop_suffix_northwest, drop_suffix_southeast, left, right):
+    # Temporary column name.
+    #
+    # TODO Test for presence of temporary column name in "LEFT" and "RIGHT" CSV files.
+    column = '__temp__'
+
+    def temp_(code):
+        """Generate value for temporary column.
+
+        Arguments:
+        code -- the UBID code
+
+        Returns:
+        The value for the temporary column.
+        """
+
+        # Does the partial match criteria include at least one OLC code?
+        if centroid or northwest or southeast:
+            # Is the specified UBID code valid?
+            if buildingid.v2.isValid(code):
+                # Separate the UBID code into three OLC codes.
+                openlocationcodes = code.split(buildingid.v2.SEPARATOR_)
+
+                # Extract the OLC codes.
+                centroid_openlocationcode = openlocationcodes[buildingid.v2.INDEX_CENTROID_]
+                northwest_openlocationcode = openlocationcodes[buildingid.v2.INDEX_NORTHWEST_]
+                southeast_openlocationcode = openlocationcodes[buildingid.v2.INDEX_SOUTHEAST_]
+
+                # Initialize new list of OLC codes.
+                new_openlocationcodes = []
+
+                if centroid:
+                    if drop_suffix_centroid > 0:
+                        # If the "--centroid" flag is set and the "--drop-suffix-centroid"
+                        # option is non-zero, then drop the required number of
+                        # characters, and append the new OLC code to the list.
+                        new_openlocationcodes.append(centroid_openlocationcode[:(-1 * drop_suffix_centroid)])
+                    else:
+                        # Otherwise, append the unmodified OLC code to the list.
+                        new_openlocationcodes.append(centroid_openlocationcode)
+
+                if northwest:
+                    if drop_suffix_northwest > 0:
+                        # If the "--northwest" flag is set and the "--drop-suffix-northwest"
+                        # option is non-zero, then drop the required number of
+                        # characters, and append the new OLC code to the list.
+                        new_openlocationcodes.append(northwest_openlocationcode[:(-1 * drop_suffix_northwest)])
+                    else:
+                        # Otherwise, append the unmodified OLC code to the list.
+                        new_openlocationcodes.append(northwest_openlocationcode)
+
+                if southeast:
+                    if drop_suffix_southeast > 0:
+                        # If the "--southeast" flag is set and the "--drop-suffix-southeast"
+                        # option is non-zero, then drop the required number of
+                        # characters, and append the new OLC code to the list.
+                        new_openlocationcodes.append(southeast_openlocationcode[:(-1 * drop_suffix_southeast)])
+                    else:
+                        # Otherwise, append the unmodified OLC code to the list.
+                        new_openlocationcodes.append(southeast_openlocationcode)
+
+                if len(new_openlocationcodes) > 0:
+                    # If the new list of OLC codes is non-empty, then join
+                    # the OLC codes, and then return the result.
+                    return buildingid.v2.SEPARATOR_.join(new_openlocationcodes)
+                else:
+                    # No result.
+                    return None
+            else:
+                # No result.
+                return None
+        else:
+            # No result.
+            return None
+
+    # Read the left and right CSV files.
+    left_data_frame = pandas.read_csv(filepath_or_buffer=left)
+    right_data_frame = pandas.read_csv(filepath_or_buffer=right)
+
+    # Create temporary columns.
+    left_data_frame[column] = left_data_frame[left_on].map(lambda x: temp_(x))
+    right_data_frame[column] = right_data_frame[right_on].map(lambda x: temp_(x))
+
+    # Merge the left and right CSV files (using temporary columns).
+    merged_data_frame = left_data_frame.merge(right_data_frame, how=how, left_on=column, right_on=column)
+
+    del merged_data_frame[column]
+
+    # Write the merged CSV file to the standard output stream.
+    merged_data_frame.to_csv(path_or_buf=click.get_text_stream('stdout'), index=False, quoting=csv.QUOTE_NONNUMERIC)
+
+    # Done!
+    return
+
+@cli.command('csvmatch-partial-v3', short_help='Merge the records in two CSV files by partially matching the version-3 UBIDs (format: "C-n-e-s-w").')
+@click.option('--how', type=click.Choice(['left', 'right', 'outer', 'inner']), default='inner', show_default=True, help='the database-style join operation')
+@click.option('--left-on', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field name for the column to join on for the "LEFT" CSV file')
+@click.option('--right-on', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field name for the column to join on for the "RIGHT" CSV file')
+@click.option('--centroid/--no-centroid', default=False, help='whether or not to match the Open Location Code for the centroid')
+@click.option('--north/--no-north', default=False, help='whether or not to match the Chebyshev distance to the northern extent')
+@click.option('--east/--no-east', default=False, help='whether or not to match the Chebyshev distance to the eastern extent')
+@click.option('--south/--no-south', default=False, help='whether or not to match the Chebyshev distance to the southern extent')
+@click.option('--west/--no-west', default=False, help='whether or not to match the Chebyshev distance to the western extent')
+@click.option('--drop-suffix-centroid', type=click.IntRange(0, None), default=0, show_default=True, help='the number of characters to drop (from the right) of the Open Location Code for the centroid')
+@click.argument('left', type=click.File('r'))
+@click.argument('right', type=click.File('r'))
+def run_csv_match_partial_v3(how, left_on, right_on, centroid, north, east, south, west, drop_suffix_centroid, left, right):
+    # Temporary column name.
+    #
+    # TODO Test for presence of temporary column name in "LEFT" and "RIGHT" CSV files.
+    column = '__temp__'
+
+    def temp_(code):
+        """Generate value for temporary column.
+
+        Arguments:
+        code -- the UBID code
+
+        Returns:
+        The value for the temporary column.
+        """
+
+        # Does the partial match criteria include at least one criterion?
+        if centroid or north or east or south or west:
+            match = buildingid.v3.RE_PATTERN_.match(code)
+
+            # Is the specified UBID code valid?
+            if match is None:
+                return None
+            else:
+                # Initialize new list of OLC codes.
+                new_openlocationcodes = []
+
+                if centroid:
+                    centroid_openlocationcode = match.group(buildingid.v3.RE_GROUP_OPENLOCATIONCODE_)
+
+                    if drop_suffix_centroid > 0:
+                        # If the "--centroid" flag is set and the "--drop-suffix-centroid"
+                        # option is non-zero, then drop the required number of
+                        # characters, and append the new OLC code to the list.
+                        new_openlocationcodes.append(centroid_openlocationcode[:(-1 * drop_suffix_centroid)])
+                    else:
+                        # Otherwise, append the unmodified OLC code to the list.
+                        new_openlocationcodes.append(centroid_openlocationcode)
+
+                if north:
+                    # If the "--north" flag is set, then append the Chebyshev
+                    # distance to the northern extent to the list.
+                    new_openlocationcodes.append(match.group(buildingid.v3.RE_GROUP_NORTH_))
+
+                if east:
+                    # If the "--east" flag is set, then append the Chebyshev
+                    # distance to the eastern extent to the list.
+                    new_openlocationcodes.append(match.group(buildingid.v3.RE_GROUP_EAST_))
+
+                if south:
+                    # If the "--south" flag is set, then append the Chebyshev
+                    # distance to the southern extent to the list.
+                    new_openlocationcodes.append(match.group(buildingid.v3.RE_GROUP_SOUTH_))
+
+                if west:
+                    # If the "--west" flag is set, then append the Chebyshev
+                    # distance to the western extent to the list.
+                    new_openlocationcodes.append(match.group(buildingid.v3.RE_GROUP_WEST_))
+
+                if len(new_openlocationcodes) > 0:
+                    # If the new list of OLC codes is non-empty, then join
+                    # the OLC codes, and then return the result.
+                    return buildingid.v3.SEPARATOR_.join(new_openlocationcodes)
+                else:
+                    # No result.
+                    return None
+        else:
+            # No result.
+            return None
+
+    # Read the left and right CSV files.
+    left_data_frame = pandas.read_csv(filepath_or_buffer=left)
+    right_data_frame = pandas.read_csv(filepath_or_buffer=right)
+
+    # Create temporary columns.
+    left_data_frame[column] = left_data_frame[left_on].map(lambda x: temp_(x))
+    right_data_frame[column] = right_data_frame[right_on].map(lambda x: temp_(x))
+
+    # Merge the left and right CSV files (using temporary columns).
+    merged_data_frame = left_data_frame.merge(right_data_frame, how=how, left_on=column, right_on=column)
+
+    del merged_data_frame[column]
+
+    # Write the merged CSV file to the standard output stream.
+    merged_data_frame.to_csv(path_or_buf=click.get_text_stream('stdout'), index=False, quoting=csv.QUOTE_NONNUMERIC)
 
     # Done!
     return
