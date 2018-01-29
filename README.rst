@@ -128,16 +128,25 @@ For example, to view the documentation for the "convert" sub-command:
 Commands
 ^^^^^^^^
 
-+--------------+---------------------------------------------------------------+
-| Command name | Description                                                   |
-+==============+===============================================================+
-| append2csv   | Read CSV file from stdin, append UBID field, and write CSV    |
-|              | file to stdout.                                               |
-+--------------+---------------------------------------------------------------+
-| convert      | Read UBID (one per line) from stdin, convert UBID, and write  |
-|              | UBID (one per line) to stdout. Write invalid UBID (one per    |
-|              | line) to stderr.                                              |
-+--------------+---------------------------------------------------------------+
++---------------------+--------------------------------------------------------+
+| Command name        | Description                                            |
++=====================+========================================================+
+| append2csv          | Read CSV file from stdin, append UBID field, and write |
+|                     | CSV file to stdout.                                    |
++---------------------+--------------------------------------------------------+
+| convert             | Read UBID (one per line) from stdin, convert UBID, and |
+|                     | write UBID (one per line) to stdout. Write invalid UBID|
+|                     | (one per line) to stderr.                              |
++---------------------+--------------------------------------------------------+
+| csvmatch-exact      | Merge the records in two CSV files by exactly matching |
+|                     | the UBIDs.                                             |
++---------------------+--------------------------------------------------------+
+| csvmatch-partial-v2 | Merge the records in two CSV files by partially        |
+|                     | matching the version-2 UBIDs (format: "C-NE-SE").      |
++---------------------+--------------------------------------------------------+
+| csvmatch-partial-v3 | Merge the records in two CSV files by partially        |
+|                     | matching the version-3 UBIDs (format: "C-n-e-s-w").    |
++---------------------+--------------------------------------------------------+
 
 ----
 Data
