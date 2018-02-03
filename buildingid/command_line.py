@@ -201,6 +201,86 @@ def run_convert(source, target):
     # Done!
     return
 
+def longestCommonPrefix2(string1, string2):
+    substring = ''
+    for ix in range(1, min(len(string1), len(string2))):
+        s1 = string1[ix - 1]
+        s2 = string2[ix - 1]
+        if s1 == s2:
+            substring += s1
+        else:
+            break
+    return substring
+
+def longestCommonPrefix3(string1, string2, string3):
+    # return longestCommonPrefix2(string1, longestCommonPrefix2(string2, string3))
+
+    # return longestCommonPrefix2(longestCommonPrefix2(string1, string2), string3)
+
+    substring = ''
+    for ix in range(1, min(len(string1), min(len(string2), len(string3)))):
+        s1 = string1[ix - 1]
+        s2 = string2[ix - 1]
+        s3 = string3[ix - 1]
+        if (s1 == s2) and (s2 == s3):
+            substring += s1
+        else:
+            break
+    return substring
+
+@cli.command('csvlcp-v2', short_help='Read CSV file from stdin, find longest common prefix of UBID field, and write CSV file to stdout.')
+@click.option('--on', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field used as input')
+@click.argument('src', type=click.File('r'))
+@click.argument('dst', type=click.File('w'))
+def run_csv_longest_common_prefix_v2(on, src, dst):
+    # Read the CSV file.
+    data_frame = pandas.read_csv(filepath_or_buffer=src)
+
+    if not on in data_frame:
+        raise ValueError('Field not found: {0}'.format(on))
+
+    def temp_(code):
+        """Generate value for temporary column.
+
+        Arguments:
+        code -- the UBID code
+
+        Returns:
+        The value for the temporary column.
+        """
+
+        if buildingid.v2.isValid(code):
+            # Separate the UBID code into three OLC codes.
+            return code.split(buildingid.v2.SEPARATOR_)
+        else:
+            return None
+
+    # Create temporary series.
+    series = data_frame[on].map(lambda x: temp_(x))
+
+    # Create new data frame.
+    new_data_frame = pandas.DataFrame(data={
+        on: data_frame[on],
+    }, index=data_frame.index)
+
+    new_data_frame['centroid_northwest'] = series.map(lambda xs: longestCommonPrefix2(xs[buildingid.v2.INDEX_CENTROID_], xs[buildingid.v2.INDEX_NORTHWEST_]))
+    new_data_frame['centroid_northwest_str_len'] = new_data_frame['centroid_northwest'].str.len()
+
+    new_data_frame['centroid_southeast'] = series.map(lambda xs: longestCommonPrefix2(xs[buildingid.v2.INDEX_CENTROID_], xs[buildingid.v2.INDEX_SOUTHEAST_]))
+    new_data_frame['centroid_southeast_str_len'] = new_data_frame['centroid_southeast'].str.len()
+
+    new_data_frame['northwest_southeast'] = series.map(lambda xs: longestCommonPrefix2(xs[buildingid.v2.INDEX_NORTHWEST_], xs[buildingid.v2.INDEX_SOUTHEAST_]))
+    new_data_frame['northwest_southeast_str_len'] = new_data_frame['northwest_southeast'].str.len()
+
+    new_data_frame['centroid_northwest_southeast'] = series.map(lambda xs: longestCommonPrefix3(xs[buildingid.v2.INDEX_CENTROID_], xs[buildingid.v2.INDEX_NORTHWEST_], xs[buildingid.v2.INDEX_SOUTHEAST_]))
+    new_data_frame['centroid_northwest_southeast_str_len'] = new_data_frame['centroid_northwest_southeast'].str.len()
+
+    # Write data frame to new CSV file.
+    new_data_frame.to_csv(path_or_buf=dst, index=False, quoting=csv.QUOTE_NONNUMERIC)
+
+    # Done!
+    return
+
 @cli.command('csvmatch-exact', short_help='Merge the records in two CSV files by exactly matching the UBIDs.')
 @click.option('--how', type=click.Choice(['left', 'right', 'outer', 'inner']), default='inner', show_default=True, help='the database-style join operation')
 @click.option('--left-on', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field name for the column to join on for the "LEFT" CSV file')
