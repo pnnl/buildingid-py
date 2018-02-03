@@ -225,6 +225,8 @@ def run_csv_match_exact(how, left_on, right_on, left, right):
 @click.option('--how', type=click.Choice(['left', 'right', 'outer', 'inner']), default='inner', show_default=True, help='the database-style join operation')
 @click.option('--left-on', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field name for the column to join on for the "LEFT" CSV file')
 @click.option('--right-on', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field name for the column to join on for the "RIGHT" CSV file')
+@click.option('--left-temp-fieldname', type=click.STRING, default='__temp__', show_default=True, help='the new field to be created and used for temporarily storing the matching data for the "LEFT" CSV file')
+@click.option('--right-temp-fieldname', type=click.STRING, default='__temp__', show_default=True, help='the new field to be created and used for temporarily storing the matching data for the "RIGHT" CSV file')
 @click.option('--centroid/--no-centroid', default=False, help='whether or not to match the Open Location Code for the centroid')
 @click.option('--northwest/--no-northwest', default=False, help='whether or not to match the Open Location Code for the northwest corner')
 @click.option('--southeast/--no-southeast', default=False, help='whether or not to match the Open Location Code for the southeast corner')
@@ -233,12 +235,7 @@ def run_csv_match_exact(how, left_on, right_on, left, right):
 @click.option('--drop-suffix-southeast', type=click.IntRange(0, None), default=0, show_default=True, help='the number of characters to drop (from the right) of the Open Location Code for the southeast corner')
 @click.argument('left', type=click.File('r'))
 @click.argument('right', type=click.File('r'))
-def run_csv_match_partial_v2(how, left_on, right_on, centroid, northwest, southeast, drop_suffix_centroid, drop_suffix_northwest, drop_suffix_southeast, left, right):
-    # Temporary column name.
-    #
-    # TODO Test for presence of temporary column name in "LEFT" and "RIGHT" CSV files.
-    column = '__temp__'
-
+def run_csv_match_partial_v2(how, left_on, right_on, left_temp_fieldname, right_temp_fieldname, centroid, northwest, southeast, drop_suffix_centroid, drop_suffix_northwest, drop_suffix_southeast, left, right):
     def temp_(code):
         """Generate value for temporary column.
 
@@ -312,14 +309,26 @@ def run_csv_match_partial_v2(how, left_on, right_on, centroid, northwest, southe
     left_data_frame = pandas.read_csv(filepath_or_buffer=left)
     right_data_frame = pandas.read_csv(filepath_or_buffer=right)
 
+    if left_temp_fieldname in left_data_frame:
+        raise ValueError('Duplicate field in "LEFT" CSV file: {0}'.format(left_temp_fieldname))
+
+    if right_temp_fieldname in right_data_frame:
+        raise ValueError('Duplicate field in "RIGHT" CSV file: {0}'.format(right_temp_fieldname))
+
     # Create temporary columns.
-    left_data_frame[column] = left_data_frame[left_on].map(lambda x: temp_(x))
-    right_data_frame[column] = right_data_frame[right_on].map(lambda x: temp_(x))
+    left_data_frame[left_temp_fieldname] = left_data_frame[left_on].map(lambda x: temp_(x))
+    right_data_frame[right_temp_fieldname] = right_data_frame[right_on].map(lambda x: temp_(x))
 
     # Merge the left and right CSV files (using temporary columns).
-    merged_data_frame = left_data_frame.merge(right_data_frame, how=how, left_on=column, right_on=column)
+    merged_data_frame = left_data_frame.merge(right_data_frame, how=how, left_on=left_temp_fieldname, right_on=right_temp_fieldname)
 
-    del merged_data_frame[column]
+    # Delete temporary column for left CSV file.
+    if left_temp_fieldname in merged_data_frame:
+        del merged_data_frame[left_temp_fieldname]
+
+    # Delete temporary column for right CSV file.
+    if right_temp_fieldname in merged_data_frame:
+        del merged_data_frame[right_temp_fieldname]
 
     # Write the merged CSV file to the standard output stream.
     merged_data_frame.to_csv(path_or_buf=click.get_text_stream('stdout'), index=False, quoting=csv.QUOTE_NONNUMERIC)
@@ -331,6 +340,8 @@ def run_csv_match_partial_v2(how, left_on, right_on, centroid, northwest, southe
 @click.option('--how', type=click.Choice(['left', 'right', 'outer', 'inner']), default='inner', show_default=True, help='the database-style join operation')
 @click.option('--left-on', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field name for the column to join on for the "LEFT" CSV file')
 @click.option('--right-on', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field name for the column to join on for the "RIGHT" CSV file')
+@click.option('--left-temp-fieldname', type=click.STRING, default='__temp__', show_default=True, help='the new field to be created and used for temporarily storing the matching data for the "LEFT" CSV file')
+@click.option('--right-temp-fieldname', type=click.STRING, default='__temp__', show_default=True, help='the new field to be created and used for temporarily storing the matching data for the "RIGHT" CSV file')
 @click.option('--centroid/--no-centroid', default=False, help='whether or not to match the Open Location Code for the centroid')
 @click.option('--north/--no-north', default=False, help='whether or not to match the Chebyshev distance to the northern extent')
 @click.option('--east/--no-east', default=False, help='whether or not to match the Chebyshev distance to the eastern extent')
@@ -339,12 +350,7 @@ def run_csv_match_partial_v2(how, left_on, right_on, centroid, northwest, southe
 @click.option('--drop-suffix-centroid', type=click.IntRange(0, None), default=0, show_default=True, help='the number of characters to drop (from the right) of the Open Location Code for the centroid')
 @click.argument('left', type=click.File('r'))
 @click.argument('right', type=click.File('r'))
-def run_csv_match_partial_v3(how, left_on, right_on, centroid, north, east, south, west, drop_suffix_centroid, left, right):
-    # Temporary column name.
-    #
-    # TODO Test for presence of temporary column name in "LEFT" and "RIGHT" CSV files.
-    column = '__temp__'
-
+def run_csv_match_partial_v3(how, left_on, right_on, left_temp_fieldname, right_temp_fieldname, centroid, north, east, south, west, drop_suffix_centroid, left, right):
     def temp_(code):
         """Generate value for temporary column.
 
@@ -413,14 +419,26 @@ def run_csv_match_partial_v3(how, left_on, right_on, centroid, north, east, sout
     left_data_frame = pandas.read_csv(filepath_or_buffer=left)
     right_data_frame = pandas.read_csv(filepath_or_buffer=right)
 
+    if left_temp_fieldname in left_data_frame:
+        raise ValueError('Duplicate field in "LEFT" CSV file: {0}'.format(left_temp_fieldname))
+
+    if right_temp_fieldname in right_data_frame:
+        raise ValueError('Duplicate field in "RIGHT" CSV file: {0}'.format(right_temp_fieldname))
+
     # Create temporary columns.
-    left_data_frame[column] = left_data_frame[left_on].map(lambda x: temp_(x))
-    right_data_frame[column] = right_data_frame[right_on].map(lambda x: temp_(x))
+    left_data_frame[left_temp_fieldname] = left_data_frame[left_on].map(lambda x: temp_(x))
+    right_data_frame[right_temp_fieldname] = right_data_frame[right_on].map(lambda x: temp_(x))
 
     # Merge the left and right CSV files (using temporary columns).
-    merged_data_frame = left_data_frame.merge(right_data_frame, how=how, left_on=column, right_on=column)
+    merged_data_frame = left_data_frame.merge(right_data_frame, how=how, left_on=left_temp_fieldname, right_on=right_temp_fieldname)
 
-    del merged_data_frame[column]
+    # Delete temporary column for left CSV file.
+    if left_temp_fieldname in merged_data_frame:
+        del merged_data_frame[left_temp_fieldname]
+
+    # Delete temporary column for right CSV file.
+    if right_temp_fieldname in merged_data_frame:
+        del merged_data_frame[right_temp_fieldname]
 
     # Write the merged CSV file to the standard output stream.
     merged_data_frame.to_csv(path_or_buf=click.get_text_stream('stdout'), index=False, quoting=csv.QUOTE_NONNUMERIC)
