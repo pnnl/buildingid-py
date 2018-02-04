@@ -11,6 +11,7 @@
 import click
 import csv
 import pandas
+import shapely.geometry
 
 from buildingid.version import __version__
 
@@ -76,7 +77,9 @@ DEFAULT_QUOTECHAR_WRITER_ = '"'
 @click.option('--writer-delimiter', type=click.STRING, default=DEFAULT_DELIMITER_WRITER_, show_default=True, help='the one-character string used to separate output fields')
 @click.option('--writer-fieldname', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field used as output')
 @click.option('--writer-quotechar', type=click.STRING, default=DEFAULT_QUOTECHAR_WRITER_, show_default=True, help='the one-character string used to quote output fields that contain special characters')
-def run_append_to_csv(code_length, codec, reader_delimiter, reader_fieldname, reader_quotechar, writer_delimiter, writer_fieldname, writer_quotechar):
+@click.option('--wkt/--no-wkt', default=True, show_default=True, help='include Well-known Text (WKT) in the output')
+@click.option('--wkt-fieldname', type=click.STRING, default='{0}_{1}'.format(DEFAULT_FIELDNAME_READER_, DEFAULT_FIELDNAME_WRITER_), show_default=True, help='the field used as output for the WKT representation of the geometry of the UBID')
+def run_append_to_csv(code_length, codec, reader_delimiter, reader_fieldname, reader_quotechar, writer_delimiter, writer_fieldname, writer_quotechar, wkt, wkt_fieldname):
     # Look-up the codec module.
     codec_module = CODEC_MODULES_BY_INDEX_[codec]
 
@@ -104,6 +107,15 @@ def run_append_to_csv(code_length, codec, reader_delimiter, reader_fieldname, re
     # (safely).
     writer_fieldnames.append(writer_fieldname)
 
+    if wkt:
+        # Validate WKT field.
+        if wkt_fieldname in writer_fieldnames:
+            raise ValueError('Duplicate field: {0}'.format(wkt_fieldname))
+
+        # Validation successful. Add the WKT field for the CSV writer to the
+        # list (safely).
+        writer_fieldnames.append(wkt_fieldname)
+
     # Initialize the CSV writer for the standard-output stream.
     writer_kwargs = {
         'delimiter': writer_delimiter,
@@ -128,10 +140,23 @@ def run_append_to_csv(code_length, codec, reader_delimiter, reader_fieldname, re
         # Look-up the value of the field.
         reader_fieldname_value = row[reader_fieldname]
 
+        # Initialize the value of the WKT field.
+        wkt_fieldname_value = None
+
         try:
             # Parse the value of the field, assuming Well-known Text (WKT)
             # format, and then encode the result as a UBID.
             writer_fieldname_value = codec_module.encode(*buildingid.wkt.parse(reader_fieldname_value), codeLength=code_length)
+
+            if wkt:
+                # Decode the UBID.
+                writer_fieldname_value_CodeArea = codec_module.decode(writer_fieldname_value)
+
+                # Encode the OLC bounding box as WKT.
+                wkt_fieldname_value = str(shapely.geometry.box(writer_fieldname_value_CodeArea.longitudeLo, writer_fieldname_value_CodeArea.latitudeLo, writer_fieldname_value_CodeArea.longitudeHi, writer_fieldname_value_CodeArea.latitudeHi))
+
+                # Set the value of the WKT field.
+                row[wkt_fieldname] = wkt_fieldname_value
         except:
             # If an exception is raised (and caught), then write the CSV header
             # row (to the standard-error stream).
