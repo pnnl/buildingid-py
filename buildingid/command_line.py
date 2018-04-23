@@ -12,6 +12,7 @@ import click
 import csv
 import pandas
 import shapely.geometry
+import sys
 
 from buildingid.version import __version__
 
@@ -551,5 +552,23 @@ def run_csv_match_partial_v3(how, left_on, right_on, left_temp_fieldname, right_
     # Done!
     return
 
+# c.f., https://stackoverflow.com/questions/15063936/csv-error-field-larger-than-field-limit-131072
+def set_csv_field_size_limit(maxsize = sys.maxsize):
+    decrement = True
+
+    while decrement:
+        try:
+            csv.field_size_limit(maxsize)
+        except OverflowError:
+            maxsize = int(maxsize / 10)
+
+            decrement = True
+        else:
+            decrement = False
+
+    return
+
 if __name__ == '__main__':
+    set_csv_field_size_limit()
+
     cli()
