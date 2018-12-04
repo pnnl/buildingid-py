@@ -54,7 +54,6 @@ setup(
     install_requires=[
         'click',
         'deprecation',
-        'pandas',
         'shapely',
     ],
 

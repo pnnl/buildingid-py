@@ -138,15 +138,6 @@ Commands
 |                     | write UBID (one per line) to stdout. Write invalid UBID|
 |                     | (one per line) to stderr.                              |
 +---------------------+--------------------------------------------------------+
-| csvmatch-exact      | Merge the records in two CSV files by exactly matching |
-|                     | the UBIDs.                                             |
-+---------------------+--------------------------------------------------------+
-| csvmatch-partial-v2 | Merge the records in two CSV files by partially        |
-|                     | matching the version-2 UBIDs (format: "C-NE-SE").      |
-+---------------------+--------------------------------------------------------+
-| csvmatch-partial-v3 | Merge the records in two CSV files by partially        |
-|                     | matching the version-3 UBIDs (format: "C-n-e-s-w").    |
-+---------------------+--------------------------------------------------------+
 
 ----
 Data
