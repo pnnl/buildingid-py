@@ -150,7 +150,7 @@ located in the ``bin/get_buildingid_data.sh`` source file.
 License
 -------
 
-BSD 3-clause "New" or "Revised" license.
+`The 2-Clause BSD License <https://opensource.org/licenses/BSD-2-Clause>`_
 
 -------------
 Contributions

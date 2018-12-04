@@ -35,6 +35,7 @@ setup(
     url='https://github.com/pnnl/buildingid',
     author='Mark Borkum',
     author_email='mark.borkum@pnnl.gov',
+    license='BSD-2-Clause',
 
     classifiers=[
         'Development Status :: 4 - Beta',
