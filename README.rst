@@ -62,7 +62,7 @@ The API
 UBID codecs are encapsulated in separate modules:
 
 * ``buildingid.v1`` (format: "C-h-w"; **deprecated**)
-* ``buildingid.v2`` (format: "C-NW-SE")
+* ``buildingid.v2`` (format: "C-NW-SE"; **deprecated**)
 * ``buildingid.v3`` (format: "C-n-e-s-w")
 
 Modules export the same API:
@@ -78,16 +78,16 @@ In the following example, a UBID code is decoded and then re-encoded:
 
   #!/usr/bin/env python3
 
-  # Use the "C-NW-SE" format for UBID codes.
-  import buildingid.v2
+  # Use the "C-n-e-s-w" format for UBID codes.
+  import buildingid.v3
 
   if __name__ == '__main__':
     # Initialize UBID code.
-    code = '849VQJH6+95J-849VQJH5+VGW-849VQJG6+XV8'
+    code = '849VQJH6+95J-51-58-42-50'
     print(code)
 
     # Decode the UBID code.
-    code_area = buildingid.v2.decode(code)
+    code_area = buildingid.v3.decode(code)
     print(code_area)
 
     # Resize the resulting UBID code area.
@@ -98,7 +98,7 @@ In the following example, a UBID code is decoded and then re-encoded:
     print(new_code_area)
 
     # Encode the new UBID code area.
-    new_code = buildingid.v2.encodeCodeArea(new_code_area)
+    new_code = buildingid.v3.encodeCodeArea(new_code_area)
     print(new_code)
 
     # Test that the new UBID code and code area match the originals.

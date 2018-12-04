@@ -10,6 +10,9 @@
 from .context import openlocationcode
 
 from .code_area import CodeArea
+from .version import __version__
+
+import deprecation
 
 # The number of OLC codes in a UBID code.
 COUNT_ = 3
@@ -28,6 +31,7 @@ INDEX_SOUTHEAST_ = 2
 # The separator for OLC codes in a UBID code.
 SEPARATOR_ = '-'
 
+@deprecation.deprecated(deprecated_in='1.1.0', removed_in=None, current_version=__version__, details='Use `buildingid.v3.decode` instead.')
 def decode(code: str) -> CodeArea:
     """Returns the UBID code area for the given UBID code.
 
@@ -66,6 +70,7 @@ def decode(code: str) -> CodeArea:
     # Construct and return the UBID code area.
     return CodeArea(centroid_openlocationcode_CodeArea, southeast_openlocationcode_CodeArea.latitudeLo, northwest_openlocationcode_CodeArea.longitudeLo, northwest_openlocationcode_CodeArea.latitudeHi, southeast_openlocationcode_CodeArea.longitudeHi, centroid_openlocationcode_CodeArea.codeLength)
 
+@deprecation.deprecated(deprecated_in='1.1.0', removed_in=None, current_version=__version__, details='Use `buildingid.v3.encode` instead.')
 def encode(latitudeLo: float, longitudeLo: float, latitudeHi: float, longitudeHi: float, latitudeCenter: float, longitudeCenter: float, **kwargs) -> str:
     """Returns the UBID code for the given coordinates.
 
@@ -101,6 +106,7 @@ def encode(latitudeLo: float, longitudeLo: float, latitudeHi: float, longitudeHi
     openlocationcodes[INDEX_SOUTHEAST_] = southeast_openlocationcode
     return SEPARATOR_.join(openlocationcodes)
 
+@deprecation.deprecated(deprecated_in='1.1.0', removed_in=None, current_version=__version__, details='Use `buildingid.v3.encodeCodeArea` instead.')
 def encodeCodeArea(parent: CodeArea) -> str:
     """Returns the UBID code for the given UBID code area.
 
@@ -124,6 +130,7 @@ def encodeCodeArea(parent: CodeArea) -> str:
     # Delegate.
     return encode(parent.latitudeLo, parent.longitudeLo, parent.latitudeHi, parent.longitudeHi, parent.child.latitudeCenter, parent.child.longitudeCenter, codeLength=parent.codeLength)
 
+@deprecation.deprecated(deprecated_in='1.1.0', removed_in=None, current_version=__version__, details='Use `buildingid.v3.isValid` instead.')
 def isValid(code: str) -> bool:
     """Is the given UBID code valid?
 

@@ -36,7 +36,7 @@ RE_GROUP_HEIGHT_ = 2
 # bounding box for the building footprint.
 RE_GROUP_WIDTH_ = 3
 
-@deprecation.deprecated(deprecated_in='1.0.0', removed_in=None, current_version=__version__, details='Use `buildingid.v2.decode` or `buildingid.v3.decode` instead.')
+@deprecation.deprecated(deprecated_in='1.1.0', removed_in=None, current_version=__version__, details='Use `buildingid.v3.decode` instead.')
 def decode(code: str) -> CodeArea:
     """Returns the UBID code area for the given UBID code.
 
@@ -69,7 +69,7 @@ def decode(code: str) -> CodeArea:
     # Construct and return the UBID code area.
     return CodeArea(centroid_openlocationcode_CodeArea, centroid_openlocationcode_CodeArea.latitudeLo - half_height, centroid_openlocationcode_CodeArea.longitudeLo - half_width, centroid_openlocationcode_CodeArea.latitudeHi + half_height, centroid_openlocationcode_CodeArea.longitudeHi + half_width, centroid_openlocationcode_CodeArea.codeLength)
 
-@deprecation.deprecated(deprecated_in='1.0.0', removed_in=None, current_version=__version__, details='Use `buildingid.v2.encode` or `buildingid.v3.encode` instead.')
+@deprecation.deprecated(deprecated_in='1.1.0', removed_in=None, current_version=__version__, details='Use `buildingid.v3.encode` instead.')
 def encode(latitudeLo: float, longitudeLo: float, latitudeHi: float, longitudeHi: float, latitudeCenter: float, longitudeCenter: float, **kwargs) -> str:
     """Returns the UBID code for the given coordinates.
 
@@ -117,7 +117,7 @@ def encode(latitudeLo: float, longitudeLo: float, latitudeHi: float, longitudeHi
         'width_in_openlocationcode_units': width,
     }
 
-@deprecation.deprecated(deprecated_in='1.0.0', removed_in=None, current_version=__version__, details='Use `buildingid.v2.encodeCodeArea` or `buildingid.v3.encodeCodeArea` instead.')
+@deprecation.deprecated(deprecated_in='1.1.0', removed_in=None, current_version=__version__, details='Use `buildingid.v3.encodeCodeArea` instead.')
 def encodeCodeArea(parent: CodeArea) -> str:
     """Returns the UBID code for the given UBID code area.
 
@@ -141,7 +141,7 @@ def encodeCodeArea(parent: CodeArea) -> str:
     # Delegate.
     return encode(parent.latitudeLo, parent.longitudeLo, parent.latitudeHi, parent.longitudeHi, parent.child.latitudeCenter, parent.child.longitudeCenter, codeLength=parent.codeLength)
 
-@deprecation.deprecated(deprecated_in='1.0.0', removed_in=None, current_version=__version__, details='Use `buildingid.v2.isValid` or `buildingid.v3.isValid` instead.')
+@deprecation.deprecated(deprecated_in='1.1.0', removed_in=None, current_version=__version__, details='Use `buildingid.v3.isValid` instead.')
 def isValid(code: str) -> bool:
     """Is the given UBID code valid?
 
