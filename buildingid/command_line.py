@@ -8,11 +8,16 @@
 #
 # See LICENSE.txt and WARRANTY.txt for details.
 
-import click
 import csv
-import shapely.geometry
+import functools
 import sys
 
+import click
+import pyproj
+import shapefile
+import shapely.geometry
+
+from buildingid.context import openlocationcode
 from buildingid.version import __version__
 
 import buildingid.v1
@@ -62,11 +67,22 @@ DEFAULT_FIELDNAME_READER_ = 'the_geom'
 # The default field used as output.
 DEFAULT_FIELDNAME_WRITER_ = 'UBID'
 
+# The default projection used as input.
+DEFAULT_PROJECTION_READER_ = 'epsg:4326'
+
 # The default one-character string used to quote input fields that contain special characters.
 DEFAULT_QUOTECHAR_READER_ = '"'
 
 # The default one-character string used to quote input fields that contain special characters.
 DEFAULT_QUOTECHAR_WRITER_ = '"'
+
+from openlocationcode import PAIR_CODE_LENGTH_
+
+def validate_codeLength(ctx, param, value):
+    if (value >= 2) and ((value >= PAIR_CODE_LENGTH_) or ((value % 2) == 0)):
+        return value
+    else:
+        raise click.BadParameter('Invalid value for "{0}": Invalid Open Location Code length - {1}'.format(param, str(value)))
 
 @cli.command('append2csv', short_help='Read CSV file from stdin, append UBID field, and write CSV file to stdout.')
 @click.option('--code-length', type=click.IntRange(0, None), callback=validate_codeLength, default=DEFAULT_CODE_LENGTH_, show_default=True, help='the Open Location Code length')
@@ -182,6 +198,99 @@ def run_append_to_csv(code_length, codec, reader_delimiter, reader_fieldname, re
             writer.writerow(row)
 
     # Done!
+    return
+
+@cli.command('append2shp', short_help='Read ESRI Shapefile from "SRC", append UBID field, and write ESRI Shapefile to "DST".')
+@click.argument('src', type=click.Path())
+@click.argument('dst', type=click.Path())
+@click.option('--code-length', type=click.IntRange(0, None), callback=validate_codeLength, default=DEFAULT_CODE_LENGTH_, show_default=True, help='the Open Location Code length')
+@click.option('--codec', type=CODEC_MODULE_INDICES_, default=DEFAULT_CODEC_, show_default=True, help='the UBID codec')
+@click.option('--reader-projection', type=click.STRING, default=DEFAULT_PROJECTION_READER_, show_default=True, help='the projection for the points in shapes in the input ESRI Shapefile, e.g., WGS-84')
+@click.option('--writer-fieldname', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field used as output')
+def run_append_to_shp(src, dst, code_length, codec, reader_projection, writer_fieldname):
+    # Look-up the codec module.
+    codec_module = CODEC_MODULES_BY_INDEX_[codec]
+
+    p1 = pyproj.Proj(init=reader_projection)
+    p2 = pyproj.Proj(init=DEFAULT_PROJECTION_READER_) # WGS-84
+    transform = functools.partial(pyproj.transform, p1, p2)
+
+    # Initialize the ESRI Shapefile reader.
+    shapereader = shapefile.Reader(src)
+
+    if shapereader.shapeType == shapefile.POLYGON:
+        # Initialize the ESRI Shapefile writer.
+        shapewriter = shapefile.Writer()
+        shapewriter.fields = shapereader.fields[1:] # skip first deletion field
+        shapewriter.field(writer_fieldname, 'C')
+        shapewriter.shapeType = shapereader.shapeType
+
+        for shapeRecord in shapereader.shapeRecords():
+            assert shapeRecord.shape.shapeType == shapefile.POLYGON
+
+            # Look-up the value of the field.
+            reader_fieldname_value = str(shapely.geometry.Polygon(map(lambda coords: transform(*coords), list(shapeRecord.shape.points))))
+
+            try:
+                # Parse the value of the field, assuming Well-known Text (WKT)
+                # format, and then encode the result as a UBID.
+                writer_fieldname_value = codec_module.encode(*buildingid.wkt.parse(reader_fieldname_value), codeLength=code_length)
+            except:
+                # If an exception is raised (and caught), then write the record
+                # without the UBID.
+                shapewriter.record(*(shapeRecord.record + [None]))
+            else:
+                # Otherwise, write the record with the UBID.
+                shapewriter.record(*(shapeRecord.record + [writer_fieldname_value]))
+
+            # BUG https://github.com/GeospatialPython/pyshp/issues/100
+            shapewriter._shapes.append(shapeRecord.shape)
+
+        # Close the ESRI Shapefile writer.
+        shapewriter.save(dst)
+    else:
+        # TODO Warning: Invalid ESRI Shapefile (not POLYGON).
+        pass
+
+    # Done!
+    return
+
+@cli.command('shp2csv', short_help='Read ESRI Shapefile from "SRC" and write CSV file with Well-known Text (WKT) field to stdout.')
+@click.argument('src', type=click.Path())
+@click.option('--reader-projection', type=click.STRING, default=DEFAULT_PROJECTION_READER_, show_default=True, help='the projection for the points in shapes in the input ESRI Shapefile, e.g., WGS-84')
+@click.option('--writer-delimiter', type=click.STRING, default=DEFAULT_DELIMITER_WRITER_, show_default=True, help='the one-character string used to separate output fields')
+@click.option('--writer-fieldname', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field used as output')
+@click.option('--writer-quotechar', type=click.STRING, default=DEFAULT_QUOTECHAR_WRITER_, show_default=True, help='the one-character string used to quote output fields that contain special characters')
+def run_shp_to_csv(src, reader_projection, writer_delimiter, writer_fieldname, writer_quotechar):
+    p1 = pyproj.Proj(init=reader_projection)
+    p2 = pyproj.Proj(init=DEFAULT_PROJECTION_READER_) # WGS-84
+    transform = functools.partial(pyproj.transform, p1, p2)
+
+    shapereader = shapefile.Reader(src)
+
+    shapereader_fieldnames = list(map(lambda field: field[0], list(shapereader.fields)))
+
+    del shapereader_fieldnames[0] # DeletionFlag
+
+    csvwriter_fieldnames = shapereader_fieldnames + [writer_fieldname]
+
+    csvwriter = csv.DictWriter(click.get_text_stream('stdout'), delimiter=writer_delimiter, fieldnames=csvwriter_fieldnames, quotechar=writer_quotechar)
+
+    csvwriter.writeheader()
+
+    if shapereader.shapeType == shapefile.POLYGON:
+        for shapeRecord in shapereader.shapeRecords():
+            assert shapeRecord.shape.shapeType == shapefile.POLYGON
+
+            csvrow = dict(zip(shapereader_fieldnames, list(shapeRecord.record)))
+
+            csvrow[writer_fieldname] = str(shapely.geometry.Polygon(map(lambda coords: transform(*coords), list(shapeRecord.shape.points))))
+
+            csvwriter.writerow(csvrow)
+    else:
+        # TODO Warning: Invalid ESRI Shapefile (not POLYGON).
+        pass
+
     return
 
 @cli.command('convert', short_help='Read UBID (one per line) from stdin, convert UBID, and write UBID (one per line) to stdout. Write invalid UBID (one per line) to stderr.')

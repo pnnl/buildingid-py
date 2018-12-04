@@ -134,9 +134,15 @@ Commands
 | append2csv          | Read CSV file from stdin, append UBID field, and write |
 |                     | CSV file to stdout.                                    |
 +---------------------+--------------------------------------------------------+
+| append2shp          | Read ESRI Shapefile from "SRC", append UBID field, and |
+|                     | write ESRI Shapefile to "DST".                         |
++---------------------+--------------------------------------------------------+
 | convert             | Read UBID (one per line) from stdin, convert UBID, and |
 |                     | write UBID (one per line) to stdout. Write invalid UBID|
 |                     | (one per line) to stderr.                              |
++---------------------+--------------------------------------------------------+
+| shp2csv             | Read ESRI Shapefile from "SRC" and write CSV file with |
+|                     | Well-known Text (WKT) field to stdout.                 |
 +---------------------+--------------------------------------------------------+
 
 ----

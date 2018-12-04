@@ -7,4 +7,4 @@
 #
 # See LICENSE.txt and WARRANTY.txt for details.
 
-__version__ = '1.1.0'
+__version__ = '1.2.0'
