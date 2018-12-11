@@ -259,7 +259,7 @@ def run_append_to_shp(src, dst, code_length, codec, reader_projection, writer_fi
 @click.argument('src', type=click.Path())
 @click.option('--reader-projection', type=click.STRING, default=DEFAULT_PROJECTION_READER_, show_default=True, help='the projection for the points in shapes in the input ESRI Shapefile, e.g., WGS-84')
 @click.option('--writer-delimiter', type=click.STRING, default=DEFAULT_DELIMITER_WRITER_, show_default=True, help='the one-character string used to separate output fields')
-@click.option('--writer-fieldname', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field used as output')
+@click.option('--writer-fieldname', type=click.STRING, default=DEFAULT_FIELDNAME_READER_, show_default=True, help='the field used as output')
 @click.option('--writer-quotechar', type=click.STRING, default=DEFAULT_QUOTECHAR_WRITER_, show_default=True, help='the one-character string used to quote output fields that contain special characters')
 def run_shp_to_csv(src, reader_projection, writer_delimiter, writer_fieldname, writer_quotechar):
     p1 = pyproj.Proj(init=reader_projection)
