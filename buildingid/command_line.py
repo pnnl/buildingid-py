@@ -291,6 +291,7 @@ def run_shp_to_csv(src, reader_projection, writer_delimiter, writer_fieldname, w
         # TODO Warning: Invalid ESRI Shapefile (not POLYGON).
         pass
 
+    # Done!
     return
 
 @cli.command('convert', short_help='Read UBID (one per line) from stdin, convert UBID, and write UBID (one per line) to stdout. Write invalid UBID (one per line) to stderr.')
