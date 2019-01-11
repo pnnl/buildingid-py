@@ -279,7 +279,11 @@ def run_shp_to_csv(src, reader_projection, reader_projection_preserve_units, wri
     # Remove the first element of the list.
     del shapereader_fieldnames[0] # DeletionFlag
 
-    # Initialize the list of fields for the CSV writer.
+    # Validate the fields for the CSV writer.
+    if writer_fieldname in shapereader_fieldnames:
+        raise click.ClickException('Invalid value for "writer-fieldname": Duplicate field: {0}'.format(writer_fieldname))
+
+    # Validation successfull. Initialize the list of fields for the CSV writer.
     csvwriter_fieldnames = shapereader_fieldnames + [writer_fieldname]
 
     # Initialize the CSV writer for the standard-output stream.
