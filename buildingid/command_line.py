@@ -264,7 +264,8 @@ def run_append_to_shp(src, dst, code_length, codec, reader_projection, reader_pr
 @click.option('--writer-delimiter', type=click.STRING, default=DEFAULT_DELIMITER_WRITER_, show_default=True, help='the one-character string used to separate output fields')
 @click.option('--writer-fieldname', type=click.STRING, default=DEFAULT_FIELDNAME_READER_, show_default=True, help='the field used as output')
 @click.option('--writer-quotechar', type=click.STRING, default=DEFAULT_QUOTECHAR_WRITER_, show_default=True, help='the one-character string used to quote output fields that contain special characters')
-def run_shp_to_csv(src, reader_projection, reader_projection_preserve_units, writer_delimiter, writer_fieldname, writer_quotechar):
+@click.option('--writer-exceed-field-size-limit/--no-writer-exceed-field-size-limit', default=True, show_default=True, help='if set, then the field used for output may exceed the field size limit')
+def run_shp_to_csv(src, reader_projection, reader_projection_preserve_units, writer_delimiter, writer_fieldname, writer_quotechar, writer_exceed_field_size_limit):
     # Configure the projection from the source to WGS-84.
     p1 = pyproj.Proj(init=reader_projection, preserve_units=reader_projection_preserve_units)
     p2 = pyproj.Proj(init=DEFAULT_PROJECTION_READER_) # WGS-84
@@ -301,7 +302,17 @@ def run_shp_to_csv(src, reader_projection, reader_projection_preserve_units, wri
             # Look-up the value of the field.
             #
             # NOTE The length of the string may exceed the CSV field size limit.
-            csvrow[writer_fieldname] = str(shapely.geometry.Polygon(map(lambda coords: transform(*coords), list(shapeRecord.shape.points))))
+            writer_fieldname_value = str(shapely.geometry.Polygon(map(lambda coords: transform(*coords), list(shapeRecord.shape.points))))
+
+            # Test if the length of the string exceeds the CSV field size limit.
+            if (len(writer_fieldname_value) > csv.field_size_limit()) and not writer_exceed_field_size_limit:
+                # If the length of the string exceeds the CSV field size limit
+                # and the flag is set to `False`, then do not write the CSV row.
+                #
+                # TODO Warning: String length exceeds CSV field size limit.
+                continue
+
+            csvrow[writer_fieldname] = writer_fieldname_value
 
             # Write the row (to the standard output stream).
             csvwriter.writerow(csvrow)
