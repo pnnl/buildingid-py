@@ -206,12 +206,14 @@ def run_append_to_csv(code_length, codec, reader_delimiter, reader_fieldname, re
 @click.option('--code-length', type=click.IntRange(0, None), callback=validate_codeLength, default=DEFAULT_CODE_LENGTH_, show_default=True, help='the Open Location Code length')
 @click.option('--codec', type=CODEC_MODULE_INDICES_, default=DEFAULT_CODEC_, show_default=True, help='the UBID codec')
 @click.option('--reader-projection', type=click.STRING, default=DEFAULT_PROJECTION_READER_, show_default=True, help='the projection for the points in shapes in the input ESRI Shapefile, e.g., WGS-84')
+@click.option('--reader-projection-preserve-units/--no-reader-projection-preserve-units', default=True, show_default=True, help='if set, then the units of the projection are not forced to be meters')
 @click.option('--writer-fieldname', type=click.STRING, default=DEFAULT_FIELDNAME_WRITER_, show_default=True, help='the field used as output')
-def run_append_to_shp(src, dst, code_length, codec, reader_projection, writer_fieldname):
+def run_append_to_shp(src, dst, code_length, codec, reader_projection, reader_projection_preserve_units, writer_fieldname):
     # Look-up the codec module.
     codec_module = CODEC_MODULES_BY_INDEX_[codec]
 
-    p1 = pyproj.Proj(init=reader_projection)
+    # Configure the projection from the source to WGS-84.
+    p1 = pyproj.Proj(init=reader_projection, preserve_units=reader_projection_preserve_units)
     p2 = pyproj.Proj(init=DEFAULT_PROJECTION_READER_) # WGS-84
     transform = functools.partial(pyproj.transform, p1, p2)
 
@@ -258,11 +260,13 @@ def run_append_to_shp(src, dst, code_length, codec, reader_projection, writer_fi
 @cli.command('shp2csv', short_help='Read ESRI Shapefile from "SRC" and write CSV file with Well-known Text (WKT) field to stdout.')
 @click.argument('src', type=click.Path())
 @click.option('--reader-projection', type=click.STRING, default=DEFAULT_PROJECTION_READER_, show_default=True, help='the projection for the points in shapes in the input ESRI Shapefile, e.g., WGS-84')
+@click.option('--reader-projection-preserve-units/--no-reader-projection-preserve-units', default=True, show_default=True, help='if set, then the units of the projection are not forced to be meters')
 @click.option('--writer-delimiter', type=click.STRING, default=DEFAULT_DELIMITER_WRITER_, show_default=True, help='the one-character string used to separate output fields')
 @click.option('--writer-fieldname', type=click.STRING, default=DEFAULT_FIELDNAME_READER_, show_default=True, help='the field used as output')
 @click.option('--writer-quotechar', type=click.STRING, default=DEFAULT_QUOTECHAR_WRITER_, show_default=True, help='the one-character string used to quote output fields that contain special characters')
-def run_shp_to_csv(src, reader_projection, writer_delimiter, writer_fieldname, writer_quotechar):
-    p1 = pyproj.Proj(init=reader_projection)
+def run_shp_to_csv(src, reader_projection, reader_projection_preserve_units, writer_delimiter, writer_fieldname, writer_quotechar):
+    # Configure the projection from the source to WGS-84.
+    p1 = pyproj.Proj(init=reader_projection, preserve_units=reader_projection_preserve_units)
     p2 = pyproj.Proj(init=DEFAULT_PROJECTION_READER_) # WGS-84
     transform = functools.partial(pyproj.transform, p1, p2)
 
