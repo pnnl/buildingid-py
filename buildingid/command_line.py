@@ -270,14 +270,19 @@ def run_shp_to_csv(src, reader_projection, reader_projection_preserve_units, wri
     p2 = pyproj.Proj(init=DEFAULT_PROJECTION_READER_) # WGS-84
     transform = functools.partial(pyproj.transform, p1, p2)
 
+    # Initialize the ESRI Shapefile reader.
     shapereader = shapefile.Reader(src)
 
+    # Initialize the list of fields in the ESRI Shapefile.
     shapereader_fieldnames = list(map(lambda field: field[0], list(shapereader.fields)))
 
+    # Remove the first element of the list.
     del shapereader_fieldnames[0] # DeletionFlag
 
+    # Initialize the list of fields for the CSV writer.
     csvwriter_fieldnames = shapereader_fieldnames + [writer_fieldname]
 
+    # Initialize the CSV writer for the standard-output stream.
     csvwriter = csv.DictWriter(click.get_text_stream('stdout'), delimiter=writer_delimiter, fieldnames=csvwriter_fieldnames, quotechar=writer_quotechar)
 
     csvwriter.writeheader()
@@ -286,10 +291,15 @@ def run_shp_to_csv(src, reader_projection, reader_projection_preserve_units, wri
         for shapeRecord in shapereader.shapeRecords():
             assert shapeRecord.shape.shapeType == shapefile.POLYGON
 
+            # Initialize new CSV row.
             csvrow = dict(zip(shapereader_fieldnames, list(shapeRecord.record)))
 
+            # Look-up the value of the field.
+            #
+            # NOTE The length of the string may exceed the CSV field size limit.
             csvrow[writer_fieldname] = str(shapely.geometry.Polygon(map(lambda coords: transform(*coords), list(shapeRecord.shape.points))))
 
+            # Write the row (to the standard output stream).
             csvwriter.writerow(csvrow)
     else:
         # TODO Warning: Invalid ESRI Shapefile (not POLYGON).
