@@ -11,6 +11,10 @@
 from setuptools import setup, find_packages
 from codecs import open
 from os import path
+from zipfile import ZipFile
+from io import BytesIO
+from requests import get
+
 
 here = path.abspath(path.dirname(__file__))
 
@@ -77,3 +81,8 @@ setup(
         ],
     },
 )
+
+# Install open-location-code python module
+r = get('https://github.com/google/open-location-code/archive/68ba7ed4c6e7fae41a0255e4394ba1fa0f8435bb.zip')
+z = ZipFile(BytesIO(r.content))
+z.extract('open-location-code-68ba7ed4c6e7fae41a0255e4394ba1fa0f8435bb/python/openlocationcode.py')

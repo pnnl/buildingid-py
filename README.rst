@@ -14,13 +14,12 @@ Install
 To complete this guide, `Git <https://git-scm.com/>`_ and `Python 3 <https://www.python.org/>`_ are required.
 Dependencies are automatically installed using `pip <https://pypi.python.org/pypi/pip>`_.
 
-Clone the repository and submodules, and then install the ``pnnl-buildingid`` package:
+Clone the repository, and then install the ``pnnl-buildingid`` package:
 
 ::
 
   git clone https://github.com/pnnl/buildingid
   cd buildingid
-  git submodule update --init
   pip3 install -e .
 
 Verify the location of the ``buildingid`` command:
