@@ -56,7 +56,7 @@ setup(
     install_requires=[
         'click',
         'deprecation',
-        'pyproj',
+        'pyproj==1.9.6',
         'pyshp',
         'requests',
         'shapely',
