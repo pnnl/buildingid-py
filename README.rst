@@ -126,7 +126,7 @@ View the documentation for the ``buildingid`` command using the ``--help`` comma
   #=> <<more lines of output>>
 
 View the documentation for a sub-command of the ``buildingid`` command using the ``--help`` command-line option.
-For example, to view the documentation for the "convert" sub-command:
+For example, to view the documentation for the "append2csv" sub-command:
 
 ::
 
