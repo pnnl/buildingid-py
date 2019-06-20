@@ -1,7 +1,4 @@
 include LICENSE.txt
 include WARRANTY.txt
 
-recursive-include bin *
-recursive-include data *
-recursive-include test_data *
 recursive-include tests *

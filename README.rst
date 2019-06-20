@@ -42,11 +42,17 @@ Use `pip <https://pypi.python.org/pypi/pip>`_ to remove the ``pnnl-buildingid`` 
 Test
 ====
 
-Test the ``pnnl-buildingid`` package using the `unittest <https://docs.python.org/3/library/unittest.html>`_ package from the standard library:
+Test the ``pnnl-buildingid`` package using the `nose <https://pypi.org/project/nose/>`_ package:
 
 ::
 
-  python3 -m "unittest" tests/*
+  nosetests tests/
+
+Coverage testing is enabled using the `coverage <https://pypi.org/project/coverage/>`_ package:
+
+::
+
+  nosetests --with-coverage --cover-html --cover-package=buildingid tests/
 
 Usage
 =====
@@ -59,51 +65,47 @@ The ``pnnl-buildingid`` package supports two usages:
 The API
 ```````
 
-UBID codecs are encapsulated in separate modules:
-
-* ``buildingid.v1`` (format: "C-h-w"; **deprecated**)
-* ``buildingid.v2`` (format: "C-NW-SE"; **deprecated**)
-* ``buildingid.v3`` (format: "C-n-e-s-w")
-
-Modules export the same API:
-
-* ``decode(code: str) -> buildingid.CodeArea``
-* ``encode(latitudeLo: float, longitudeLo: float, latitudeHi: float, longitudeHi: float, latitudeCenter: float, longitudeCenter: float, **kwargs) -> str``
-* ``encodeCodeArea(parent: buildingid.CodeArea) -> str``
-* ``isValid(code: str) -> bool``
+* ``buildingid.code``
+  * ``Code``
+  * ``CodeArea``
+    * ``encode() -> Code``
+    * ``resize() -> CodeArea``
+  * ``decode(Code) -> CodeArea``
+  * ``encode(float, float, float, float, float, float, **kwargs) -> Code``
+  * ``isValid(Code) -> bool``
 
 In the following example, a UBID code is decoded and then re-encoded:
 
 ::
 
   #!/usr/bin/env python3
+  # -*- coding: utf-8 -*-
 
-  # Use the "C-n-e-s-w" format for UBID codes.
-  import buildingid.v3
+  import buildingid.code
 
   if __name__ == '__main__':
     # Initialize UBID code.
-    code = '849VQJH6+95J-51-58-42-50'
-    print(code)
+    orig_code = '849VQJH6+95J-51-58-42-50'
+    print(orig_code)
 
-    # Decode the UBID code.
-    code_area = buildingid.v3.decode(code)
-    print(code_area)
+    # Decode UBID code.
+    orig_code_area = buildingid.code.decode(orig_code)
+    print(orig_code_area)
 
-    # Resize the resulting UBID code area.
+    # Resize resulting UBID code area.
     #
-    # The effect of this operation is that the height and width of the UBID code
+    # The effect of this operation is that the length and width of the UBID code
     # area are reduced by half an OLC code area.
-    new_code_area = code_area.resize()
+    new_code_area = orig_code_area.resize()
     print(new_code_area)
 
-    # Encode the new UBID code area.
-    new_code = buildingid.v3.encodeCodeArea(new_code_area)
+    # Encode new UBID code area.
+    new_code = new_code_area.encode()
     print(new_code)
 
-    # Test that the new UBID code and code area match the originals.
-    print(code_area == new_code_area)
-    print(code == new_code)
+    # Test that new UBID code and UBID code area match the originals.
+    assert (orig_code == new_code)
+    assert (orig_code_area == new_code_area)
 
 The CLI
 ```````
@@ -121,8 +123,8 @@ For example, to view the documentation for the "convert" sub-command:
 
 ::
 
-  buildingid convert --help
-  #=> Usage: buildingid convert [OPTIONS]
+  buildingid append2csv --help
+  #=> Usage: buildingid append2csv [OPTIONS] [latlng|wkb|wkt]
   #=> <<more lines of output>>
 
 Commands
@@ -134,23 +136,6 @@ Commands
 | append2csv          | Read CSV file from stdin, append UBID field, and write |
 |                     | CSV file to stdout.                                    |
 +---------------------+--------------------------------------------------------+
-| append2shp          | Read ESRI Shapefile from "SRC", append UBID field, and |
-|                     | write ESRI Shapefile to "DST".                         |
-+---------------------+--------------------------------------------------------+
-| convert             | Read UBID (one per line) from stdin, convert UBID, and |
-|                     | write UBID (one per line) to stdout. Write invalid UBID|
-|                     | (one per line) to stderr.                              |
-+---------------------+--------------------------------------------------------+
-| shp2csv             | Read ESRI Shapefile from "SRC" and write CSV file with |
-|                     | Well-known Text (WKT) field to stdout.                 |
-+---------------------+--------------------------------------------------------+
-
-----
-Data
-----
-
-A shell script that downloads publicly-available data and assigns UBID codes is
-located in the ``bin/get_buildingid_data.sh`` source file.
 
 -------
 License
