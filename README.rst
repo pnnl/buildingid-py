@@ -66,12 +66,19 @@ The API
 ```````
 
 * ``buildingid.code``
+
   - ``Code``
+
   - ``CodeArea``
+
     + ``encode() -> Code``
+
     + ``resize() -> CodeArea``
+
   - ``decode(Code) -> CodeArea``
+
   - ``encode(float, float, float, float, float, float, **kwargs) -> Code``
+
   - ``isValid(Code) -> bool``
 
 In the following example, a UBID code is decoded and then re-encoded:
