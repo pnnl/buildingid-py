@@ -18,8 +18,8 @@ Clone the repository and submodules, and then install the ``pnnl-buildingid`` pa
 
 ::
 
-  git clone https://github.com/pnnl/buildingid
-  cd buildingid
+  git clone https://github.com/pnnl/buildingid-py
+  cd buildingid-py
   git submodule update --init
   pip3 install -e .
 
