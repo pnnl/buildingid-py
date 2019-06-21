@@ -233,11 +233,13 @@ Step-by-step instructions
 
 1. Locate input Esri shapefile, e.g., ``path/to/in.shp``.
 
-2. Locate output CSV file (generated), e.g., ``path/to/out.csv``.
+2. Locate input PRJ file, e.g., ``path/to/in.prj``.
 
-3. Convert input Esri shapefile into output CSV file:
+3. Locate output CSV file (generated), e.g., ``path/to/out.csv``.
 
-   * ``ogr2ogr -t_srs "EPSG:4326" -f CSV path/to/out.csv path/to/in.shp -lco GEOMETRY=AS_WKT``
+4. Convert input Esri shapefile into output CSV file:
+
+   * ``ogr2ogr -s_srs "$(cat path/to/in.prj)" -t_srs "EPSG:4326" -f CSV path/to/out.csv path/to/in.shp -lco GEOMETRY=AS_WKT``
 
 Notes
 `````
@@ -246,7 +248,7 @@ See ``ogr2ogr --long-usage`` for full help.
 
 Output CSV file has added "WKT" column whose elements are `well-known text (WKT) <https://www.iso.org/standard/60343.html>`_ strings; enabled by ``-lco GEOMETRY=AS_WKT`` option.
 
-Projection system for geographic coordinates is `WGS84 <https://epsg.io/4326>`_; enabled by ``-t_srs "EPSG:4326"`` option.
+Projection system for geographic coordinates in output CSV file is `WGS84 <https://epsg.io/4326>`_; enabled by ``-t_srs "EPSG:4326"`` option.
 
 Records in input Esri shapefile are converted into rows in output CSV file, where fields in input Esri shapefile are converted into columns in output CSV file.
 
@@ -277,7 +279,7 @@ The coordinate system is `NAD 1983 StatePlane California III FIPS 0403 Feet <htt
 
 To convert the Esri shapefile into CSV format and then assign UBIDs to the resulting CSV file:
 
-1. ``ogr2ogr -t_srs "ESRI:102643" -f CSV BuildingFootprint.csv Basemap2_201905021152225992/BuildingFootprint.shp -lco GEOMETRY=AS_WKT``
+1. ``ogr2ogr -s_srs "$(cat Basemap2_201905021152225992/BuildingFootprint.prj)" -t_srs "EPSG:4326" -f CSV BuildingFootprint.csv Basemap2_201905021152225992/BuildingFootprint.shp -lco GEOMETRY=AS_WKT``
 
 2. ``buildingid append2csv wkt --code-length=11 --fieldname-code="UBID" --fieldname-wktstr="WKT" < BuildingFootprint.csv > BuildingFootprint.out.csv 2> BuildingFootprint.err.csv``
 
