@@ -252,6 +252,35 @@ Records in input Esri shapefile are converted into rows in output CSV file, wher
 
 Shapes in input Esri shapefile are converted into elements of "WKT" column of output CSV file.
 
+------------
+Case Studies
+------------
+
+Chicago, IL
+===========
+
+`The City of Chicago's open data portal <https://data.cityofchicago.org>`_ hosts the `"Building Footprints (current)" <https://data.cityofchicago.org/Buildings/Building-Footprints-current-/hz9b-7nh8>`_ dataset in CSV format; available at: https://data.cityofchicago.org/api/views/syp8-uezg/rows.csv?accessType=DOWNLOAD.
+
+The "the_geom" column of the input CSV file contains WKT strings.
+
+To assign UBIDs to the records in the input CSV file:
+
+1. ``buildingid append2csv wkt --code-length=11 --fieldname-code="UBID" --fieldname-wktstr="the_geom" < rows.csv > rows.out.csv 2> rows.err.csv``
+
+San Jose, CA
+============
+
+The `City of San Jose <http://www.sanjoseca.gov>`_ hosts `datasets <http://www.sanjoseca.gov/index.aspx?NID=3308>`_ that include building footprints and land parcels.
+
+The contents of the `"Basemap_2" <http://www.sanjoseca.gov/DocumentCenter/View/44895>`_ zip archive includes a building footprints dataset in Esri shapefile format.
+The coordinate system is `NAD 1983 StatePlane California III FIPS 0403 Feet <http://www.spatialreference.org/ref/esri/102643/>`_.
+
+To convert the Esri shapefile into CSV format and then assign UBIDs to the resulting CSV file:
+
+1. ``ogr2ogr -t_srs "ESRI:102643" -f CSV BuildingFootprint.csv Basemap2_201905021152225992/BuildingFootprint.shp -lco GEOMETRY=AS_WKT``
+
+2. ``buildingid append2csv wkt --code-length=11 --fieldname-code="UBID" --fieldname-wktstr="WKT" < BuildingFootprint.csv > BuildingFootprint.out.csv 2> BuildingFootprint.err.csv``
+
 -------
 License
 -------
