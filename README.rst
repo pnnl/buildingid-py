@@ -242,7 +242,7 @@ Step-by-step instructions
 Notes
 `````
 
-``ogr2ogr --long-usage`` for full help.
+See ``ogr2ogr --long-usage`` for full help.
 
 Output CSV file has added "WKT" column whose elements are `well-known text (WKT) <https://www.iso.org/standard/60343.html>`_ strings; enabled by ``-lco GEOMETRY=AS_WKT`` option.
 
