@@ -144,6 +144,114 @@ Commands
 |                     | CSV file to stdout.                                    |
 +---------------------+--------------------------------------------------------+
 
+---------
+Tutorials
+---------
+
+Instructions in this section use `Bash <https://www.gnu.org/software/bash/>`_ syntax.
+
+Append UBID field to CSV file
+=============================
+
+Prerequisites
+`````````````
+
+1. ``buildingid`` command is installed.
+
+   * Verify installation:
+
+     - ``buildingid --version``
+
+       + Expected output: "buildingid, version 2.0.0" (or higher version)
+
+Step-by-step instructions
+`````````````````````````
+
+1. Locate input CSV file, e.g., ``path/to/in.csv``.
+
+2. Locate output CSV file (generated), e.g., ``path/to/out.csv``.
+
+3. Locate errors CSV file (generated), e.g., ``path/to/err.csv``.
+
+4. Identify number of digits in `Open Location Code (OLC) <https://plus.codes/>`_ part of UBID code string, e.g., 11.
+
+5. Identify column of output CSV file that contains UBID code strings, e.g., "UBID".
+
+6. If input CSV file contains latitude and longitude coordinates for a centroid only:
+
+   1. Identify columns of input CSV file that contain latitude and longitude coordinates, e.g., "Latitude" and "Longitude".
+
+   2. Assign UBIDs:
+
+      * ``buildingid append2csv latlng --code-length=11 --fieldname-code="UBID" --fieldname-center-latitude="Latitude" --fieldname-center-longitude="Longitude" < path/to/in.csv > path/to/out.csv 2> path/to/err.csv``
+
+7. If input CSV file contains latitude and longitude coordinates for (i) a centroid and (ii) the northeast and southwest corners of a bounding box:
+
+   1. Identify columns of input CSV file that contain latitude and longitude coordinates, e.g., "Latitude_C", "Longitude_C", "Latitude_N", "Longitude_E", "Latitude_S", and "Longitude_W".
+
+   2. Assign UBIDs:
+
+      * ``buildingid append2csv latlng --code-length=11 --fieldname-code="UBID" --fieldname-center-latitude="Latitude_C" --fieldname-center-longitude="Longitude_C" --fieldname-north-latitude="Latitude_N" --fieldname-east-longitude="Longitude_E" --fieldname-south-latitude="Latitude_S" --fieldname-west-longitude="Longitude_W" < path/to/in.csv > path/to/out.csv 2> path/to/err.csv``
+
+8. If input CSV file contains hex-encoded `well-known binary (WKB) <https://www.iso.org/standard/60343.html>`_ strings:
+
+   1. Identify column of input CSV file that contains hex-encoded WKB strings, e.g., "WKB".
+
+   2. Assign UBIDs:
+
+      * ``buildingid append2csv wkb --code-length=11 --fieldname-code="UBID" --fieldname-wkbstr="WKB" < path/to/in.csv > path/to/out.csv 2> path/to/err.csv``
+
+9. If input CSV file contains `well-known text (WKT) <https://www.iso.org/standard/60343.html>`_ strings:
+
+   1. Identify column of input CSV file that contains WKT strings, e.g., "WKT".
+
+   2. Assign UBIDs:
+
+      * ``buildingid append2csv wkt --code-length=11 --fieldname-code="UBID" --fieldname-wktstr="WKT" < path/to/in.csv > path/to/out.csv 2> path/to/err.csv``
+
+Notes
+`````
+
+See ``buildingid append2csv --help`` for full help.
+
+Convert from Esri shapefile to CSV file
+=======================================
+
+Prerequisites
+`````````````
+
+1. `Geospatial Data Abstraction Library (GDAL) <https://www.gdal.org/>`_ is installed.
+
+   * Verify installation:
+
+     - ``ogr2ogr --version``
+
+       + Expected output: "GDAL 2.3.1, released 2018/06/22" (version and release date may vary)
+
+Step-by-step instructions
+`````````````````````````
+
+1. Locate input Esri shapefile, e.g., ``path/to/in.shp``.
+
+2. Locate output CSV file (generated), e.g., ``path/to/out.csv``.
+
+3. Convert input Esri shapefile into output CSV file:
+
+   * ``ogr2ogr -t_srs "EPSG:4326" -f CSV path/to/out.csv path/to/in.shp -lco GEOMETRY=AS_WKT``
+
+Notes
+`````
+
+``ogr2ogr --long-usage`` for full help.
+
+Output CSV file has added "WKT" column whose elements are `well-known text (WKT) <https://www.iso.org/standard/60343.html>`_ strings; enabled by ``-lco GEOMETRY=AS_WKT`` option.
+
+Projection system for geographic coordinates is `WGS84 <https://epsg.io/4326>`_; enabled by ``-t_srs "EPSG:4326"`` option.
+
+Records in input Esri shapefile are converted into rows in output CSV file, where fields in input Esri shapefile are converted into columns in output CSV file.
+
+Shapes in input Esri shapefile are converted into elements of "WKT" column of output CSV file.
+
 -------
 License
 -------
