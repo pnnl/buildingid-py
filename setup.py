@@ -47,18 +47,16 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
 
     # keywords=[],
 
-    packages=find_packages(exclude=['bin', 'contrib', 'data', 'docs', 'open-location-code', 'test_data', 'tests*']),
+    packages=find_packages(exclude=['open-location-code', 'tests*']),
 
     install_requires=[
         'click',
-        'deprecation',
-        'pyproj==1.9.6',
-        'pyshp',
-        'requests',
+        'click_log',
         'shapely',
     ],
 
@@ -74,6 +72,7 @@ setup(
         ],
         'test': [
             'coverage',
+            'nose',
         ],
     },
 
