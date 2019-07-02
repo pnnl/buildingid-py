@@ -85,8 +85,39 @@ class CodeArea(openlocationcode.CodeArea):
 
         self.centroid = centroid
 
+    @property
+    def area(self) -> float:
+        height = float(self.latitudeHi - self.latitudeLo)
+        width = float(self.longitudeHi - self.longitudeLo)
+
+        return height * width
+
     def encode(self) -> Code:
         return encode(self.latitudeLo, self.longitudeLo, self.latitudeHi, self.longitudeHi, self.centroid.latitudeCenter, self.centroid.longitudeCenter, codeLength=self.codeLength)
+
+    def intersection(self, other: 'CodeArea') -> typing.Optional[typing.Tuple[float, float, float, float]]:
+        if other is None:
+            return None
+
+        latitudeLo = float(max(self.latitudeLo, other.latitudeLo))
+        latitudeHi = float(min(self.latitudeHi, other.latitudeHi))
+        longitudeLo = float(max(self.longitudeLo, other.longitudeLo))
+        longitudeHi = float(min(self.longitudeHi, other.longitudeHi))
+
+        if (latitudeLo > latitudeHi) or (longitudeLo > longitudeHi):
+            return None
+
+        return (longitudeLo, latitudeLo, longitudeHi, latitudeHi, )
+
+    def jaccard(self, other: 'CodeArea') -> typing.Optional[float]:
+        bbox = self.intersection(other)
+
+        if bbox is None:
+            return None
+
+        area = (bbox[3] - bbox[1]) * (bbox[2] - bbox[0])
+
+        return area / (self.area + other.area - area)
 
     def resize(self) -> 'CodeArea':
         halfHeight = float(self.centroid.latitudeHi - self.centroid.latitudeLo) / 2
