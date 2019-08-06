@@ -159,7 +159,7 @@ def encode(latitudeLo: float, longitudeLo: float, latitudeHi: float, longitudeHi
 def isValid(code: Code) -> bool:
     return isValid_(code) is not None
 
-def isValid_(code: Code) -> typing.Optional[re.Match]:
+def isValid_(code: Code) -> typing.Optional[typing.Match]:
     if code is None:
         return None
 
