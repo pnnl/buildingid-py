@@ -24,6 +24,7 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+open-location-code*
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -107,3 +108,6 @@ venv.bak/
 # Static data files
 data/*
 !data/.gitkeep
+
+# PyCharm
+.idea

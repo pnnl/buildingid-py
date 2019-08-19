@@ -12,6 +12,7 @@ from setuptools import setup, find_packages
 from codecs import open
 from os import path
 
+
 here = path.abspath(path.dirname(__file__))
 
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
@@ -62,6 +63,10 @@ setup(
         'tqdm',
     ],
 
+    setup_requires=[
+        'requests',
+    ],
+
     python_requires='>=3',
 
     extras_require={
@@ -80,3 +85,14 @@ setup(
         ],
     },
 )
+
+
+# Install open-location-code python module
+from zipfile import ZipFile
+from io import BytesIO
+from requests import get
+
+
+r = get('https://github.com/google/open-location-code/archive/68ba7ed4c6e7fae41a0255e4394ba1fa0f8435bb.zip')
+z = ZipFile(BytesIO(r.content))
+z.extract('open-location-code-68ba7ed4c6e7fae41a0255e4394ba1fa0f8435bb/python/openlocationcode.py')
