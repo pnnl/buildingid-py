@@ -70,7 +70,13 @@ The API
 
   - ``CodeArea``
 
+    + ``area() -> float``
+
     + ``encode() -> Code``
+
+    + ``intersection(CodeArea) -> typing.Optional[typing.Tuple[float, float, float, float]]``
+
+    + ``jaccard(CodeArea) -> typing.Optional[float]``
 
     + ``resize() -> CodeArea``
 
@@ -79,6 +85,8 @@ The API
   - ``encode(float, float, float, float, float, float, **kwargs) -> Code``
 
   - ``isValid(Code) -> bool``
+
+**Note:** The ``Optional`` and ``Tuple`` type hints are provided by the `typing <https://docs.python.org/3/library/typing.html>`_ module.
 
 In the following example, a UBID code is decoded and then re-encoded:
 
@@ -141,6 +149,9 @@ Commands
 +=====================+========================================================+
 | append2csv          | Read CSV file from stdin, append UBID field, and write |
 |                     | CSV file to stdout.                                    |
++---------------------+--------------------------------------------------------+
+| crossref            | Read two CSV files, cross-reference UBID fields, and   |
+|                     | write CSV file.                                        |
 +---------------------+--------------------------------------------------------+
 
 ---------
@@ -212,6 +223,48 @@ Notes
 `````
 
 See ``buildingid append2csv --help`` for full help.
+
+Cross-reference UBID fields in two CSV files
+============================================
+
+Prerequisites
+`````````````
+
+1. ``buildingid`` command is installed.
+
+   * Verify installation:
+
+     - ``buildingid --version``
+
+       + Expected output: "buildingid, version 2.0.0" (or higher version)
+
+Step-by-step instructions
+`````````````````````````
+
+1. Locate left input CSV file, e.g., ``path/to/left.csv``.
+
+2. Locate right input CSV file, e.g., ``path/to/right.csv``.
+
+3. Locate output CSV file (generated), e.g., ``path/to/out.csv``.
+
+4. Identify column of left input CSV file that contains UBID code strings, e.g., "UBID".
+
+5. Identify column of right input CSV file that contains UBID code strings, e.g., "UBID".
+
+6. Cross-reference UBIDs:
+
+   * ``buildingid crossref path/to/left.csv path/to/right.csv path/to/out.csv --left-fieldname-code="UBID" --right-fieldname-code="UBID"``
+
+Notes
+`````
+
+See ``buildingid crossref --help`` for full help.
+
+Default behavior is for output CSV file to be many-to-many (i.e., many records in left input CSV file are cross-referenced with many records in right input CSV file).
+Use ``--left-group-by-jaccard`` and ``--right-group-by-jaccard`` options for one-to-many and many-to-one, respectively.
+
+Default behavior is for output CSV file to include only columns that contain UBID code strings.
+Use ``--include-left-field`` and ``--include-right-field`` options to include other columns.
 
 Convert from Esri shapefile to CSV file
 =======================================

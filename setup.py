@@ -57,7 +57,10 @@ setup(
     install_requires=[
         'click',
         'click_log',
+        'pandas',
+        'pyqtree',
         'shapely',
+        'tqdm',
     ],
 
     setup_requires=[

@@ -14,6 +14,36 @@ from buildingid.code import CodeArea
 from buildingid.context import openlocationcode
 
 class TestCodeArea(unittest.TestCase):
+    def test_buildingid_code_area_area(self):
+        codeArea = CodeArea(openlocationcode.CodeArea(-1.0, -1.0, 1.0, 1.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_), -10.0, -10.0, 10.0, 10.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_)
+
+        self.assertEqual(codeArea.area, 400.0)
+
+    def test_buildingid_code_area_intersection(self):
+        codeArea = CodeArea(openlocationcode.CodeArea(-1.0, -1.0, 1.0, 1.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_), -10.0, -10.0, 10.0, 10.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_)
+        otherCodeArea = CodeArea(openlocationcode.CodeArea(-1.0, -1.0, 1.0, 1.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_), -5.0, -5.0, 15.0, 15.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_)
+
+        bbox = codeArea.intersection(otherCodeArea)
+
+        self.assertEqual(bbox[0], -5.0)
+        self.assertEqual(bbox[1], -5.0)
+        self.assertEqual(bbox[2], 10.0)
+        self.assertEqual(bbox[3], 10.0)
+
+    def test_buildingid_code_area_jaccard(self):
+        codeArea = CodeArea(openlocationcode.CodeArea(-1.0, -1.0, 1.0, 1.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_), -10.0, -10.0, 10.0, 10.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_)
+        otherCodeArea = CodeArea(openlocationcode.CodeArea(-1.0, -1.0, 1.0, 1.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_), -5.0, -5.0, 15.0, 15.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_)
+
+        self.assertEqual(codeArea.jaccard(otherCodeArea), 225.0 / (400.0 + 400.0 - 225.0)) # OK: intersects
+
+        otherCodeArea = CodeArea(openlocationcode.CodeArea(-1.0, -1.0, 1.0, 1.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_), -20.0, -20.0, -10.0, -10.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_)
+
+        self.assertEqual(codeArea.jaccard(otherCodeArea), 0.0) # OK: adjacent
+
+        otherCodeArea = CodeArea(openlocationcode.CodeArea(-1.0, -1.0, 1.0, 1.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_), -30.0, -30.0, -20.0, -20.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_)
+
+        self.assertEqual(codeArea.jaccard(otherCodeArea), None) # Fail: no intersection
+
     def test_buildingid_code_area_resize(self):
         origCodeArea = CodeArea(openlocationcode.CodeArea(-1.0, -1.0, 1.0, 1.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_), -10.0, -10.0, 10.0, 10.0, codeLength=openlocationcode.PAIR_CODE_LENGTH_)
 
