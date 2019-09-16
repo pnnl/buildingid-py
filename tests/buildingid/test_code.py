@@ -9,11 +9,11 @@
 
 import unittest
 
+from openlocationcode import openlocationcode
 import shapely.wkt
 
 from ..context import buildingid
 from buildingid.code import RE_PATTERN_, decode, encode, isValid
-from buildingid.context import openlocationcode
 
 class TestCode(unittest.TestCase):
     def test_buildingid_code_decode(self):

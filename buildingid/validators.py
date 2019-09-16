@@ -7,7 +7,7 @@
 #
 # See LICENSE.txt and WARRANTY.txt for details.
 
-from .context import openlocationcode
+from openlocationcode import openlocationcode
 
 def isValidCodeArea(codeArea: openlocationcode.CodeArea) -> bool:
     return isValidCodeLength(codeArea.codeLength) and isValidLatitudeCenter(codeArea.latitudeLo, codeArea.latitudeHi, codeArea.latitudeCenter) and isValidLongitudeCenter(codeArea.longitudeLo, codeArea.longitudeHi, codeArea.longitudeCenter)

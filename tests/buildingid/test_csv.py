@@ -11,12 +11,13 @@ import io
 import re
 import unittest
 
+from openlocationcode import openlocationcode
+
 from ..context import buildingid
 from buildingid.command_line.dict_decoders import LatLngDictDecoder, WKBDictDecoder, WKTDictDecoder
 from buildingid.command_line.dict_encoders import BaseGeometryDictEncoder, ErrorDictEncoder
 from buildingid.command_line.dict_pipe import DictPipe
 from buildingid.command_line.exceptions import FieldNotFoundError, FieldNotUniqueError
-from buildingid.context import openlocationcode
 
 class TestCSV(unittest.TestCase):
     def test_buildingid_csv_DictPipe_LatLngDictDecoder_FieldNotFoundError(self):

@@ -52,11 +52,12 @@ setup(
 
     # keywords=[],
 
-    packages=find_packages(exclude=['open-location-code', 'tests*']),
+    packages=find_packages(exclude=['tests*']),
 
     install_requires=[
         'click',
         'click_log',
+        'openlocationcode',
         'pandas',
         'pyqtree',
         'shapely',
@@ -85,14 +86,3 @@ setup(
         ],
     },
 )
-
-
-# Install open-location-code python module
-from zipfile import ZipFile
-from io import BytesIO
-from requests import get
-
-
-r = get('https://github.com/google/open-location-code/archive/68ba7ed4c6e7fae41a0255e4394ba1fa0f8435bb.zip')
-z = ZipFile(BytesIO(r.content))
-z.extract('open-location-code-68ba7ed4c6e7fae41a0255e4394ba1fa0f8435bb/python/openlocationcode.py')

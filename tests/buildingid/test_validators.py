@@ -9,8 +9,9 @@
 
 import unittest
 
+from openlocationcode import openlocationcode
+
 from ..context import buildingid
-from buildingid.context import openlocationcode
 from buildingid.validators import isValidCodeArea, isValidCodeLength, isValidLatitude, isValidLatitudeCenter, isValidLongitude, isValidLongitudeCenter
 
 class TestValidators(unittest.TestCase):

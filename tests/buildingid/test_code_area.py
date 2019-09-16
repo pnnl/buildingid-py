@@ -9,9 +9,10 @@
 
 import unittest
 
+from openlocationcode import openlocationcode
+
 from ..context import buildingid
 from buildingid.code import CodeArea
-from buildingid.context import openlocationcode
 
 class TestCodeArea(unittest.TestCase):
     def test_buildingid_code_area_area(self):

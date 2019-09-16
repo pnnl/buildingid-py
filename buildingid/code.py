@@ -10,7 +10,8 @@
 import re
 import typing
 
-from .context import openlocationcode
+from openlocationcode import openlocationcode
+
 from .validators import isValidCodeArea, isValidCodeLength, isValidLatitude, isValidLatitudeCenter, isValidLongitude, isValidLongitudeCenter
 
 SEPARATOR_ = '-'
