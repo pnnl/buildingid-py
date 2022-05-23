@@ -9,6 +9,7 @@
 
 # import csv
 import logging
+import sys
 import typing
 
 import click
@@ -117,11 +118,6 @@ def run_append_to_csv(ctx: None, dict_decoder_id: str, code_length: int, fieldna
     # Construct `DictPipe` for standard input, output and error streams.
     dict_pipe = DictPipe(decoder_in, encoder_out, encoder_err)
 
-    # Standard input, output and error streams.
-    io_in = click.get_text_stream('stdin')
-    io_out = click.get_text_stream('stdout')
-    io_err = click.get_text_stream('stderr')
-
     # Configuration for `csv.DictReader`.
     args_in = []
     kwargs_in = {
@@ -138,7 +134,13 @@ def run_append_to_csv(ctx: None, dict_decoder_id: str, code_length: int, fieldna
     }
 
     try:
-        dict_pipe.run(io_in, io_out, io_err, args_in=args_in, kwargs_in=kwargs_in, args_out=args_out, kwargs_out=kwargs_out)
+        # Standard input, output and error streams.
+        #
+        # Suppress Windows line translation using `newline` keyword argument.
+        with open(sys.__stdin__.fileno(), mode=sys.__stdin__.mode, buffering=1, encoding=sys.__stdin__.encoding, errors=sys.__stdin__.errors, newline='', closefd=False) as io_in:
+            with open(sys.__stdout__.fileno(), mode=sys.__stdout__.mode, buffering=1, encoding=sys.__stdout__.encoding, errors=sys.__stdout__.errors, newline='', closefd=False) as io_out:
+                with open(sys.__stderr__.fileno(), mode=sys.__stderr__.mode, buffering=1, encoding=sys.__stderr__.encoding, errors=sys.__stderr__.errors, newline='', closefd=False) as io_err:
+                    dict_pipe.run(io_in, io_out, io_err, args_in=args_in, kwargs_in=kwargs_in, args_out=args_out, kwargs_out=kwargs_out)
     except CustomException as exception:
         raise click.ClickException(exception)
 
