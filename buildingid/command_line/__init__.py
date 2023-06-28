@@ -297,7 +297,7 @@ def run_crossref(ctx: None, left: typing.TextIO, right: typing.TextIO, dst: typi
                 left_series_codeArea.progress_apply(lambda codeArea: codeArea.longitudeHi).max(),
                 left_series_codeArea.progress_apply(lambda codeArea: codeArea.latitudeHi).max(),
             ])
-            for left_index, left_codeArea in tqdm(left_series_codeArea.iteritems(), total=len(left_series_codeArea)):
+            for left_index, left_codeArea in tqdm(left_series_codeArea.items(), total=len(left_series_codeArea)):
                 if left_codeArea is not None:
                     left_spindex.insert(item=(left_index, left_codeArea), bbox=[left_codeArea.longitudeLo, left_codeArea.latitudeLo, left_codeArea.longitudeHi, left_codeArea.latitudeHi])
 
@@ -305,7 +305,7 @@ def run_crossref(ctx: None, left: typing.TextIO, right: typing.TextIO, dst: typi
             dst_data: typing.List[typing.Tuple[int, int, CodeArea, CodeArea]] = [
                 (left_index, right_index, left_codeArea, right_codeArea)
                 for right_index, right_codeArea
-                in tqdm(right_series_codeArea.iteritems(), total=len(right_series_codeArea))
+                in tqdm(right_series_codeArea.items(), total=len(right_series_codeArea))
                 if right_codeArea is not None
                 for (left_index, left_codeArea)
                 in left_spindex.intersect([right_codeArea.longitudeLo, right_codeArea.latitudeLo, right_codeArea.longitudeHi, right_codeArea.latitudeHi])
@@ -323,7 +323,7 @@ def run_crossref(ctx: None, left: typing.TextIO, right: typing.TextIO, dst: typi
                 right_series_codeArea.progress_apply(lambda codeArea: codeArea.longitudeHi).max(),
                 right_series_codeArea.progress_apply(lambda codeArea: codeArea.latitudeHi).max(),
             ])
-            for right_index, right_codeArea in tqdm(right_series_codeArea.iteritems(), total=len(right_series_codeArea)):
+            for right_index, right_codeArea in tqdm(right_series_codeArea.items(), total=len(right_series_codeArea)):
                 if right_codeArea is not None:
                     right_spindex.insert(item=(right_index, right_codeArea), bbox=[right_codeArea.longitudeLo, right_codeArea.latitudeLo, right_codeArea.longitudeHi, right_codeArea.latitudeHi])
 
@@ -331,7 +331,7 @@ def run_crossref(ctx: None, left: typing.TextIO, right: typing.TextIO, dst: typi
             dst_data: typing.List[typing.Tuple[int, int, CodeArea, CodeArea]] = [
                 (left_index, right_index, left_codeArea, right_codeArea)
                 for left_index, left_codeArea
-                in tqdm(left_series_codeArea.iteritems(), total=len(left_series_codeArea))
+                in tqdm(left_series_codeArea.items(), total=len(left_series_codeArea))
                 if left_codeArea is not None
                 for (right_index, right_codeArea)
                 in right_spindex.intersect([left_codeArea.longitudeLo, left_codeArea.latitudeLo, left_codeArea.longitudeHi, left_codeArea.latitudeHi])
